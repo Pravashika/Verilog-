@@ -1,0 +1,47 @@
+module com16(inA_gt_inB,comp_in_A,comp_in_B);
+    input [15:0] comp_in_A,comp_in_B;
+    reg modvalue=0;
+    output reg inA_gt_inB;
+    always @(*)
+    begin
+        if(comp_in_A[15]>comp_in_B[15])
+            inA_gt_inB = 0;
+        else if(comp_in_A[15]<comp_in_B[15])
+            inA_gt_inB = 1;    
+        else
+        begin
+            if(comp_in_A[14:0]>comp_in_B[14:0])
+                modvalue=1;
+            else if(comp_in_A[14:0]<comp_in_B[14:0])
+                modvalue=0;
+            if(comp_in_A[15]==1’b0)
+                inA_gt_inB=modvalue;
+            else
+                inA_gt_inB=~modvalue;
+        end
+    end
+endmodule
+
+Test bench
+
+module test();
+    reg [15:0] x,y;
+    wire z;
+    com16 tt(.inA_gt_inB(z),.comp_in_A(x),.comp_in_B(y));
+    initial
+    begin
+        x= 16'h0200; y= 16'h0c00;
+        #10 x= 16'h0c00; y= 16'h0200;
+        #10 x= 16'hbc00; y= 16'hbb00;
+        #10 x= 16'hbb00; y= 16'hbc00;
+        #10 x= 16'h3c33; y= 16'h3400;
+        #10 x= 16'h3200; y= 16'hbb00;
+        #10 x= 16'hb800; y= 16'h3c00;
+        #10 x= 16'hb200; y= 16'hcb33;
+    end 
+    initial
+        $monitor ("Time=%3d, z=%b, x=%b, y=%b", $time,z,x,y);
+    initial
+        #100 $stop;
+endmodule
+
