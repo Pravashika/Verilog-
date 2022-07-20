@@ -1,0 +1,87 @@
+module room_temp_controller(heater_on,AC_on,fan_on,temp,clk,reset);
+input [5:0] temp;
+input clk,reset;
+output reg heater_on,AC_on,fan_on;
+reg [1:0] ns,ps;
+parameter s0= 2'b00, s1=2'b01, s2=2'b10, s3= 2'b11;
+
+always @(posedge clk or posedge reset)
+if (reset) 
+     ps<= s0;
+else ps<=ns;
+
+always @(temp or ps) //next state generation logic
+begin
+case(ps)
+s0: 
+   begin // 00= all AC, fan, heater off
+        if (temp< 6'b001111)//  temp less than 15
+         ns =s1; 
+         else if 
+        (temp >=6'b001111 && temp <=6'b010111)// temp between 15 and 23
+         ns=ps; 
+         else if
+        (temp >6'b010111 && temp <=6'b011011)// temp greater than 23 to equal to 27
+         ns= s2;   
+         else if (temp>6'b011011) // temp greater than 27
+         ns= s3;
+    end 
+s1: 
+   begin 
+     if (temp< 6'b001111)//  temp less than 15
+        ns =ps ; 
+     else if 
+        (temp >=6'b001111 && temp <=6'b010111)//  temp between 15 to 23
+         ns=s0; 
+    else if 
+        (temp >6'b010111 && temp<=6'b011011)// temp greater than 23 to 27
+         ns= s2; 
+    else if (temp>6'b011011) // temp greater than 27
+         ns= s3;
+   end 
+s2:
+    begin 
+    if (temp >6'b010111 && temp <=6'b011011)// temp between 23- 27
+        ns =ps ; 
+    else if (temp<6'b010110 && temp>=6'b001111 )//temp less than 23 and greater than or equal to 15
+        ns =s0 ; 
+    else if (temp>6'b011011)// temp greater than 27
+     ns= s3;
+    else if (temp< 6'b001111)//  temp less than 15
+     ns= s1;
+    
+  end
+s3: 
+    begin 
+    if (temp >6'b010111 && temp <=6'b011011)// temp between 23- 27
+    //if (temp<6'b010111 && temp >= 6'b010110 )//temp less than 23 and greater than 0r equal to 22
+    ns = s2;
+    else if (temp<=6'b010110 && temp>=6'b001111 )//temp less than 23 and greater than or equal to 15
+    ns = s0 ; 
+    else if (temp>6'b011011)// temp greater than 27
+    ns= ps;
+    else if (temp< 6'b001111)//  temp less than 15
+     ns =s1; 
+    end
+   default: ns = 2'bz;
+  endcase
+end
+
+always @(ps)// control signals generation
+begin
+case(ps)
+    s0: begin #1 heater_on=0; AC_on=0; fan_on=0; 
+    $display("Temperature =%3d, Heater off, AC off, Fan Off ", temp); end
+    s1: begin #1 heater_on=1; AC_on=0; fan_on=0; 
+    $display("Temperature =%3d, Heater on, AC off, Fan Off ",temp); end
+    s2: begin #1 heater_on=0; AC_on=0; fan_on= 1; 
+    $display("Temperature =%3d, Heater off, AC off, Fan On",temp);end
+    s3: begin #1 heater_on=0; AC_on=1; fan_on=1;
+    $display("Temperature =%3d, Heater off, AC on, Fan On",temp); end
+    default: begin #1 heater_on=0; AC_on=0; fan_on=0; end  
+endcase
+end
+endmodule
+
+
+

@@ -1,0 +1,38 @@
+module tb();
+reg [5:0] temp1;
+reg clk1, reset1;
+wire heater_on1,AC_on1,fan_on1;
+room_temp_controller uut (.heater_on(heater_on1),.AC_on(AC_on1),.fan_on(fan_on1),.temp(temp1),.clk(clk1),.reset(reset1));
+
+initial 
+ begin 
+     clk1 = 1'b0; 
+     #3 reset1=1'b1;
+     #11 reset1= 1'b0;
+    #300 $finish; 
+ end
+ 
+always #5 clk1 = ~clk1;
+
+initial
+    begin
+         #15 temp1= 6'b000011;
+         #10 temp1= 6'b010000;
+         #10 temp1= 6'b011110;
+         #10 temp1= 6'b011000;
+         #10 temp1= 6'b000000;
+         #10 temp1= 6'b010111;
+         #10 temp1= 6'b001110;
+         #10 temp1= 6'b010011;
+         #10 temp1= 6'b000011;
+         #10 temp1= 6'b001111;
+         #10 temp1= 6'b011111;
+         #10 temp1= 6'b110111;
+         #10 temp1= 6'b011110;
+         #10 temp1= 6'b001110;
+         #10 temp1= 6'b010111;
+         #10 temp1= 6'b010110;
+                       
+     end 
+
+endmodule
